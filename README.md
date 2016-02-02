@@ -1,7 +1,7 @@
 # Level your Scala up
 
 This repo has a template project for the deliberate practice session of Scala
-using the [advent of code]. We will have a private leaderboard, ask for the
+using the [advent of code][advent]. We will have a private leaderboard, ask for the
 joining code during the session.
 
 [advent]: http://adventofcode.com/
