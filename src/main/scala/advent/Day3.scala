@@ -1,21 +1,52 @@
 package advent
+import scala.collection.immutable.Seq
 
 object Day3 {
 
-  def nextCoord(coord: (Int, Int), direction: Char): (Int, Int) = direction match {
-    case '^' => (coord._1, coord._2 + 1)
-    case 'v' => (coord._1, coord._2 - 1)
-    case '>' => (coord._1 + 1, coord._2)
-    case '<' => (coord._1 - 1, coord._2)
-    case _ => coord
+  case class Coord(x: Int, y: Int)
+  object Coord {
+    val Origin = Coord(0, 0)
   }
 
-  def part1(input: String): Int = input.scanLeft(0 -> 0)(nextCoord).distinct.length
+  sealed trait Direction {
+    def move(coord: Coord): Coord
+  }
+  object Direction {
+    def parse(direction: Char): Direction = direction match {
+      case '^' => North
+      case 'v' => South
+      case '>' => East
+      case '<' => West
+      case _ => throw new IllegalArgumentException
+    }
+  }
+  case object North extends Direction {
+    override def move(coord: Coord): Coord = coord.copy(y = coord.y + 1)
+  }
+  case object South extends Direction {
+    override def move(coord: Coord): Coord = coord.copy(y = coord.y - 1)
+  }
+  case object East extends Direction {
+    override def move(coord: Coord): Coord = coord.copy(x = coord.x + 1)
+  }
+  case object West extends Direction {
+    override def move(coord: Coord): Coord = coord.copy(x = coord.x - 1)
+  }
+
+  def part1(input: String): Int = path(input.map(Direction.parse)).toSet.size
 
   def part2(input: String): Int = {
-    val evenIterator = Iterator.from(0, 2).takeWhile(_ < input.length).map(input(_))
-    val oddIterator = Iterator.from(1, 2).takeWhile(_ < input.length).map(input(_))
-    (evenIterator.scanLeft(0 -> 0)(nextCoord) ++ oddIterator.scanLeft(0 -> 0)(nextCoord)).toSet.size
+    val directions = input.map(Direction.parse)
+    val (evenIterator, oddIterator) = deinterlace(directions)
+    (path(evenIterator) ++ path(oddIterator)).toSet.size
+  }
+
+  def path(directions: Seq[Direction]): Seq[Coord] =
+    directions.scanLeft(Coord.Origin) { (coord, direction) => direction.move(coord) }
+
+  def deinterlace(directions: Seq[Direction]): (Seq[Direction], Seq[Direction]) = {
+    val (even, odd) = directions.zipWithIndex.partition(_._2 % 2 == 0)
+    (even.map(_._1), odd.map(_._1))
   }
 
   def main(args: Array[String]): Unit = {
